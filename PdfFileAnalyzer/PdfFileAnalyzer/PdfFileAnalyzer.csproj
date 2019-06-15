@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{86E75F78-0AE3-42D6-9344-232B0DCC2371}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PdfFileAnalyzer</RootNamespace>
+    <AssemblyName>PdfFileAnalyzer</AssemblyName>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\PdfFileAnalyzer.xml</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Release\PdfFileAnalyzer.xml</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Adler32.cs" />
+    <Compile Include="CryptoEngine.cs" />
+    <Compile Include="DecryptCtrl.cs" />
+    <Compile Include="LZWDecode.cs" />
+    <Compile Include="NumFormatInfo.cs" />
+    <Compile Include="OpCtrl.cs" />
+    <Compile Include="OutputCtrl.cs" />
+    <Compile Include="PdfArray.cs" />
+    <Compile Include="PdfBase.cs" />
+    <Compile Include="PdfBoolean.cs" />
+    <Compile Include="PdfByteArrayParser.cs" />
+    <Compile Include="PdfDictionary.cs" />
+    <Compile Include="Reports.cs" />
+    <Compile Include="PdfInteger.cs" />
+    <Compile Include="PdfKeyValue.cs" />
+    <Compile Include="PdfKeyword.cs" />
+    <Compile Include="PdfName.cs" />
+    <Compile Include="PdfNull.cs" />
+    <Compile Include="PdfObject.cs" />
+    <Compile Include="PdfOp.cs" />
+    <Compile Include="PdfFileParser.cs" />
+    <Compile Include="PdfParser.cs" />
+    <Compile Include="PdfRawData.cs" />
+    <Compile Include="PdfReader.cs" />
+    <Compile Include="PdfIndirectObject.cs" />
+    <Compile Include="PdfReal.cs" />
+    <Compile Include="PdfReference.cs" />
+    <Compile Include="PdfString.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
