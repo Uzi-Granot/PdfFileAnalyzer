@@ -32,6 +32,9 @@ using System.Windows.Forms;
 
 namespace TestPdfFileAnalyzer
 {
+/// <summary>
+/// Analysis screen windows form class
+/// </summary>
 public partial class AnalysisScreen : Form
 	{
 	////////////////////////////////////////////////////////////////////

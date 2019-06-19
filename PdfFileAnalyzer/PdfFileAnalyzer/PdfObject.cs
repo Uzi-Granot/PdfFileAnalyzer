@@ -25,14 +25,12 @@
 //	PdfReader.cs has the full version history
 /////////////////////////////////////////////////////////////////////
 
-using System.Diagnostics;
-
 namespace PdfFileAnalyzer
-{
-/// <summary>
-/// PDF indirect object type
-/// </summary>
-public enum ObjectType
+	{
+	/// <summary>
+	/// PDF indirect object type
+	/// </summary>
+	public enum ObjectType
 	{
 	/// <summary>
 	/// Object is not in use
@@ -103,7 +101,6 @@ public class PdfObject
 					PdfObjectType = value;
 					return;
 					}
-				Debug.WriteLine(string.Format("PdfObjectType before {0} after {1}", PdfObjectType, value));
 				PdfObjectType = value;
 				return;
 				}

@@ -35,6 +35,8 @@
 //	Version 2.0 2019/06/06
 //		Change the software to a solution with two projecs.
 //		A reader library and a test program.
+//	Version 2.1 2019/06/19
+//		Minor corrections to display software
 //
 /////////////////////////////////////////////////////////////////////
 
@@ -84,12 +86,12 @@ public class PdfReader : IDisposable
 	/// <summary>
 	/// Library revision number
 	/// </summary>
-	public static readonly string VersionNumber = "2.0.0";
+	public static readonly string VersionNumber = "2.1.0";
 
 	/// <summary>
 	/// Library revision date
 	/// </summary>
-	public static readonly string VersionDate = "2019/06/06";
+	public static readonly string VersionDate = "2019/06/19";
 
 	/// <summary>
 	/// File name
@@ -201,10 +203,10 @@ public class PdfReader : IDisposable
 		{
 		// extension must be .pdf
 		if(!FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
-			throw new ApplicationException("PDF file must have .pdf extension");
+			throw new ArgumentException("PDF file must have .pdf extension");
 
 		// make sure file exist
-		if(!File.Exists(FileName)) throw new ApplicationException("PDF file does not exist");
+		if(!File.Exists(FileName)) throw new ArgumentException("PDF file does not exist");
 
 		// save file name
 		this.FileName = FileName;
@@ -250,7 +252,7 @@ public class PdfReader : IDisposable
 		if(TempEncryptionDict.IsReference)
 			{ 
 			// get indirect object based on reference number
-			PdfIndirectObject ReaderObject = ObjectArray[((PdfReference) TempEncryptionDict).ObjectNumber];
+			PdfIndirectObject ReaderObject = ToPdfIndirectObject((PdfReference) TempEncryptionDict);
 
 			// read object type
 			if(ReaderObject != null)
@@ -279,6 +281,124 @@ public class PdfReader : IDisposable
 		
 		// document was loaded succesfully
 		return true;
+		}
+
+	/// <summary>
+	/// Convert PdfBase value to PdfDictionary
+	/// </summary>
+	/// <param name="Reference">PdfReference object</param>
+	/// <returns>PdfDictionary or null</returns>
+	public PdfIndirectObject ToPdfIndirectObject
+			(
+			PdfReference Reference
+			)
+		{
+		// get object number
+		int ObjectNo = Reference.ObjectNumber;
+
+		// test object number
+		if(ObjectNo <= 0 || ObjectNo >= ObjectArray.Length) return null;
+
+		// get the indirect object
+		PdfIndirectObject IndirectObj = ObjectArray[ObjectNo];
+
+		// the object is not a dictionary, we have an error
+		if(IndirectObj == null) return null;
+		
+		// return dictionary
+		return IndirectObj;
+		}
+
+	/// <summary>
+	/// Get PdfDictionary from a parent PdfDictionary
+	/// </summary>
+	/// <param name="ParentDict">Parent dictionary</param>
+	/// <param name="Key">Key</param>
+	/// <returns></returns>
+	public PdfDictionary ToPdfDictionary
+			(
+			PdfDictionary ParentDict,
+			string Key
+			)
+		{
+		// look for key entry in this dictionary
+		int Index = ParentDict.KeyValueArray.BinarySearch(new PdfKeyValue(Key));
+		if(Index < 0) return null;
+
+		// get dictionary directly or indirectly
+		return ToPdfDictionary(ParentDict.KeyValueArray[Index].Value);
+		}
+
+	/// <summary>
+	/// Convert PdfBase value to PdfDictionary
+	/// </summary>
+	/// <param name="BaseValue">PdfBase value</param>
+	/// <returns>PdfDictionary or null</returns>
+	public PdfDictionary ToPdfDictionary
+			(
+			PdfBase BaseValue
+			)
+		{
+		// if base value is a dictionary, return the value
+		if(BaseValue.IsDictionary) return (PdfDictionary) BaseValue;
+
+		// if entry is not indirect reference, we have an error
+		if(!BaseValue.IsReference) return null;
+
+		// get the indirect object
+		PdfIndirectObject IndirectObj = ToPdfIndirectObject((PdfReference) BaseValue);
+
+		// the object is not a dictionary, we have an error
+		if(IndirectObj == null || IndirectObj.ObjectType != ObjectType.Dictionary) return null;
+		
+		// return dictionary
+		return IndirectObj.Dictionary;
+		}
+
+	/// <summary>
+	/// Get PdfArray from a dictionary
+	/// </summary>
+	/// <param name="ParentDict">Parent dictionary</param>
+	/// <param name="Key">Key</param>
+	/// <returns>PdfArray or null</returns>
+	public PdfArray ToPdfArray
+			(
+			PdfDictionary ParentDict,
+			string Key
+			)
+		{
+		// look for key entry in dictionary
+		int Index = ParentDict.KeyValueArray.BinarySearch(new PdfKeyValue(Key));
+		if(Index < 0) return null;
+
+		// get value directly or indirectly
+		return ToPdfArray(ParentDict.KeyValueArray[Index].Value);
+		}
+
+	/// <summary>
+	/// Convert PdfBase value to PdfArray
+	/// </summary>
+	/// <param name="BaseValue">PdfBase value</param>
+	/// <returns>PdfArray or null</returns>
+	public PdfArray ToPdfArray
+			(
+			PdfBase BaseValue
+			)
+		{
+		// if entry is an array, return the value
+		if(BaseValue.IsArray) return (PdfArray) BaseValue;
+
+		// if entry is not indirect reference, we have an error
+		if(!BaseValue.IsReference) return null;
+
+		// get the indirect object
+		PdfIndirectObject IndirectObj = ToPdfIndirectObject((PdfReference) BaseValue);
+
+		// the object is not a other, we have an error
+		if(IndirectObj == null || IndirectObj.ObjectType != ObjectType.Other || !IndirectObj.Value.IsArray) return null;
+
+		// return array
+		return (PdfArray) IndirectObj.Value;
 		}
 
 	/// <summary>
@@ -570,7 +690,7 @@ public class PdfReader : IDisposable
 		if(KidsValue.IsReference)
 			{
 			// get the object pointed by the reference
-			PdfIndirectObject KidsObj = ObjectArray[((PdfReference) KidsValue).ObjectNumber];
+			PdfIndirectObject KidsObj = ToPdfIndirectObject((PdfReference) KidsValue);
 
 			// the indirect object must be an array
 			if(KidsObj == null || KidsObj.ObjectType != ObjectType.Other || !KidsObj.Value.IsArray) return null;
@@ -598,7 +718,7 @@ public class PdfReader : IDisposable
 			if(!ReferenceArray[Index].IsReference) return null;
 
 			// find page or pages object
-			PdfIndirectObject PageObj = ObjectArray[((PdfReference) ReferenceArray[Index]).ObjectNumber];
+			PdfIndirectObject PageObj = ToPdfIndirectObject((PdfReference) ReferenceArray[Index]);
 
 			// all values in reference array must be page or pages
 			if(PageObj == null || PageObj.ObjectType != ObjectType.Dictionary ||

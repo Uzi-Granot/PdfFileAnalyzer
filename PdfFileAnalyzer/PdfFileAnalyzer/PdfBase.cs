@@ -175,7 +175,7 @@ public class PdfBase
 		{
 		get
 			{
-			return GetType() == typeof(PdfBase);
+			return this == Empty;
 			}
 		}
 
@@ -503,8 +503,8 @@ public class PdfBase
 					Ctrl.Add('\\');
 					Ctrl.Add('x');
 					string Hex = string.Format("{0:x2}", TestByte);
-					Ctrl.Add(Hex[1]);
 					Ctrl.Add(Hex[0]);
+					Ctrl.Add(Hex[1]);
 					}
 				else
 					{
@@ -527,8 +527,8 @@ public class PdfBase
 			{
 			Ctrl.TestEol();
 			string Hex = string.Format("{0:x2}", TestByte);
-			Ctrl.Add(Hex[1]);
 			Ctrl.Add(Hex[0]);
+			Ctrl.Add(Hex[1]);
 			}
 
 		// final closing parentesis

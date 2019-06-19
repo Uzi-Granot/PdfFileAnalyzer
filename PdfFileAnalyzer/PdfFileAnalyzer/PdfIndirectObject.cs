@@ -202,7 +202,7 @@ namespace PdfFileAnalyzer
 			if(ContentsValue.IsReference)
 				{
 				// find the object with Object number
-				PdfIndirectObject IndirectObject = Reader.ObjectArray[((PdfReference) ContentsValue).ObjectNumber];
+				PdfIndirectObject IndirectObject = Reader.ToPdfIndirectObject((PdfReference) ContentsValue);
 				if(IndirectObject != null)
 					{
 					// the object is a stream return array with one contents object
@@ -237,7 +237,7 @@ namespace PdfFileAnalyzer
 				if(!ContentsRef.IsReference) throw new ApplicationException("Build contents array: Array item must be reference");
 
 				// get read object
-				PdfIndirectObject Contents = Reader.ObjectArray[((PdfReference) ContentsRef).ObjectNumber];
+				PdfIndirectObject Contents = Reader.ToPdfIndirectObject((PdfReference) ContentsRef);
 
 				// the object is not a stream
 				if(Contents == null || Contents.ObjectType != ObjectType.Stream) throw new ApplicationException("Build contents array: Contents must be a stream");
@@ -382,7 +382,7 @@ namespace PdfFileAnalyzer
 			if(LengthValue.IsReference)
 				{
 				// get indirect object based on reference number
-				PdfIndirectObject LengthObject = Reader.ObjectArray[((PdfReference) LengthValue).ObjectNumber];
+				PdfIndirectObject LengthObject = Reader.ToPdfIndirectObject((PdfReference) LengthValue);
 
 				// read object type
 				if(LengthObject != null && LengthObject.ObjectType == ObjectType.Other && LengthObject.Value.IsInteger)
@@ -390,9 +390,6 @@ namespace PdfFileAnalyzer
 
 				// replace /Length in dictionary with actual value
 				Dictionary.AddInteger("/Length", StreamLength);
-
-				// remove length object
-				Reader.ObjectArray[((PdfReference) LengthValue).ObjectNumber] = null;
 				}
 
 			// dictionary value is integer
