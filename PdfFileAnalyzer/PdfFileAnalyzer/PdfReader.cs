@@ -33,7 +33,7 @@
 //	Version 1.3 2015/04/02
 //		Fix a problem related to unimplemented compression filters.
 //	Version 2.0 2019/06/06
-//		Change the software to a solution with two projecs.
+//		Change the software to a solution with two projects.
 //		A reader library and a test program.
 //	Version 2.1 2019/06/19
 //		Minor corrections to display software
@@ -197,90 +197,119 @@ public class PdfReader : IDisposable
 	/// <returns>Success or failure to decrypt file</returns>
 	public bool OpenPdfFile
 			(
-			string FileName,
+			string FileName, 
 			string Password = null
 			)
 		{
-		// extension must be .pdf
-		if(!FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
-			throw new ArgumentException("PDF file must have .pdf extension");
+			// extension must be .pdf
+			if (!FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+				throw new ArgumentException("PDF file must have .pdf extension");
 
-		// make sure file exist
-		if(!File.Exists(FileName)) throw new ArgumentException("PDF file does not exist");
+			// make sure file exist
+			if (!File.Exists(FileName)) throw new ArgumentException("PDF file does not exist");
 
-		// save file name
-		this.FileName = FileName;
+			// save file name
+			this.FileName = FileName;
 
-		// safe file name is a name with no path
-		SafeFileName = FileName.Substring(FileName.LastIndexOf('\\') + 1);
+			// safe file name is a name with no path
+			SafeFileName = FileName.Substring(FileName.LastIndexOf('\\') + 1);
 
-		// open pdf file for reading
-		PdfBinaryReader = new BinaryReader(new FileStream(FileName, FileMode.Open, FileAccess.Read, FileShare.Read), Encoding.UTF8);
+			// Open PDF file for reading
+			PdfBinaryReader = new BinaryReader(new FileStream(FileName, FileMode.Open, FileAccess.Read, FileShare.Read), Encoding.UTF8);
 
-		// create parse file object
-		ParseFile = new PdfFileParser(this);
+			return OpendPdfFile(Password);
+		}
 
-		// validate file and read cross reference table
-		ValidateFile();
+	////////////////////////////////////////////////////////////////////
+	// Read PDF file
+	////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Open PDF file for reading
+	/// </summary>
+	/// <param name="FileContent">Content of the file.</param>
+	/// <param name="Password">The password.</param>
+	/// <returns></returns>
+	public bool OpenPdfFile
+			(
+			Stream FileContent, 
+			string Password = null
+			)
+		{
+			// Open PDF file for reading
+			PdfBinaryReader = new BinaryReader(FileContent, Encoding.UTF8);
 
-		// search for document ID
-		PdfBase TempIDArray = TrailerDict.FindValue("/ID");
-		if(TempIDArray.IsArray)
+			return OpendPdfFile(Password);
+		}
+
+	private bool OpendPdfFile
+			(
+			string Password = null
+			)
+		{
+			// create parse file object
+			ParseFile = new PdfFileParser(this);
+
+			// validate file and read cross reference table
+			ValidateFile();
+
+			// search for document ID
+			PdfBase TempIDArray = TrailerDict.FindValue("/ID");
+			if (TempIDArray.IsArray)
 			{
-			// document ID is an array of two ids. Normally the two are the same
-			PdfBase[] IDArray = ((PdfArray) TempIDArray).ArrayItems;
+				// document ID is an array of two ids. Normally the two are the same
+				PdfBase[] IDArray = ((PdfArray)TempIDArray).ArrayItems;
 
-			// take the firat as the id for encryption
-			if(IDArray.Length > 0 && IDArray[0].IsPdfString) DocumentID = ((PdfString) IDArray[0]).StrValue;
+				// take the first as the id for encryption
+				if (IDArray.Length > 0 && IDArray[0].IsPdfString) DocumentID = ((PdfString)IDArray[0]).StrValue;
 			}
 
-		// search for /Encrypt
-		PdfBase TempEncryptionDict = TrailerDict.FindValue("/Encrypt");
+			// search for /Encrypt
+			PdfBase TempEncryptionDict = TrailerDict.FindValue("/Encrypt");
 
-		// document is not encrypted
-		if(TempEncryptionDict.IsEmpty)
-			{
 			// document is not encrypted
-			DecryptionStatus = DecryptionStatus.FileNotProtected;
+			if (TempEncryptionDict.IsEmpty)
+			{
+				// document is not encrypted
+				DecryptionStatus = DecryptionStatus.FileNotProtected;
 
-			// set reader active
-			SetReaderActive();
-			return true;
+				// set reader active
+				SetReaderActive();
+				return true;
 			}
 
-		// value is a reference
-		if(TempEncryptionDict.IsReference)
-			{ 
-			// get indirect object based on reference number
-			PdfIndirectObject ReaderObject = ToPdfIndirectObject((PdfReference) TempEncryptionDict);
+			// value is a reference
+			if (TempEncryptionDict.IsReference)
+			{
+				// get indirect object based on reference number
+				PdfIndirectObject ReaderObject = ToPdfIndirectObject((PdfReference)TempEncryptionDict);
 
-			// read object type
-			if(ReaderObject != null)
+				// read object type
+				if (ReaderObject != null)
 				{
-				ReaderObject.ReadObject();
-				if(ReaderObject.ObjectType == ObjectType.Dictionary)
+					ReaderObject.ReadObject();
+					if (ReaderObject.ObjectType == ObjectType.Dictionary)
 					{
-					ReaderObject._PdfObjectType = "/Encryption";
-					TempEncryptionDict = ReaderObject.Dictionary;
+						ReaderObject._PdfObjectType = "/Encryption";
+						TempEncryptionDict = ReaderObject.Dictionary;
 					}
 				}
 			}
-		if(!TempEncryptionDict.IsDictionary) throw new ApplicationException("Encryption dictionary is missing");
+			if (!TempEncryptionDict.IsDictionary) throw new ApplicationException("Encryption dictionary is missing");
 
-		// save encryption dictionary
-		EncryptionDict = (PdfDictionary) TempEncryptionDict;
+			// save encryption dictionary
+			EncryptionDict = (PdfDictionary)TempEncryptionDict;
 
-		// decryption is not possible without document ID
-		if(DocumentID == null) throw new ApplicationException("Encrypted document document ID is missing.");
+			// decryption is not possible without document ID
+			if (DocumentID == null) throw new ApplicationException("Encrypted document ID is missing.");
 
-		// encryption method is not supported by this library
-		if(!TestEncryptionSupport()) return false;
+			// encryption method is not supported by this library
+			if (!TestEncryptionSupport()) return false;
 
-		// try given password or default password
-		if(!TestPassword(Password)) return false;
-		
-		// document was loaded succesfully
-		return true;
+			// try given password or default password
+			if (!TestPassword(Password)) return false;
+
+			// document was loaded successfully
+			return true;
 		}
 
 	/// <summary>
@@ -653,10 +682,10 @@ public class PdfReader : IDisposable
 			// we have a node of pages
 			if(Page.PdfObjectType == "/Pages")
 				{
-				// test for inheritence
+				// test for inheritance
 				// if the pages object dictionary has more than Type, Parent, Kids and Count
 				// entries, it is a case that the children has inherits some properties
-				// this application does not support inherited properities
+				// this application does not support inherited properties
 				if(Page.Dictionary.Count > 4) UnsupportedPageTree = true;
 
 				// recursive call for more pages
@@ -1125,7 +1154,7 @@ public class PdfReader : IDisposable
 		int Width2 = ((PdfInteger) WArray[1]).IntValue;
 		int Width3 = ((PdfInteger) WArray[2]).IntValue;
 
-		// read and decomress the stream
+		// read and decompress the stream
 		byte[] ByteArray = XRefObj.ReadStream();
 		ByteArray = XRefObj.DecompressStream(ByteArray);
 
