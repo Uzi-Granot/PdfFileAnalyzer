@@ -1,5 +1,5 @@
 # PdfFileAnalyzer
-PDF File Analyzer With C# Parsing Classes (Version 2.1)
+PDF File Analyzer With C# Parsing Classes (Version 3.0 for VS 2022 .NET 6.0)
 
 The PDF File Analyzer is designed to read, parse, and display the internal structure of PDF files. Version 2.1 supports encrypted files.
 
