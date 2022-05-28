@@ -524,11 +524,11 @@ namespace PdfFileAnalyzer
 			// loop until closing ] or EOF
 			for(;;)
 				{
-				// skip white space
-				SkipWhiteSpace();
+				// skip white space and comment
+				SkipComments();
 
 				// end of file
-				if(NextChar == EOF) throw new ApplicationException("Invalid array (end of contents)");
+				if (NextChar == EOF) throw new ApplicationException("Invalid array (end of contents)");
 
 				// end of array
 				if(NextChar == ']') break;
@@ -568,8 +568,8 @@ namespace PdfFileAnalyzer
 			// loop until closing >> or EOF
 			for(;;)
 				{
-				// skip white space
-				SkipWhiteSpace();
+				// skip white space and comment
+				SkipComments();
 
 				// end of file
 				if(NextChar == EOF) throw new ApplicationException("Invalid dictionary (end of contents)");
